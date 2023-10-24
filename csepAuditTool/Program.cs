@@ -12,7 +12,7 @@ namespace csepAuditTool
             try
             {
                 Console.WriteLine("Hello, World!");
-                Console.WriteLine("Main Entry.");
+                Console.WriteLine("Main Entry Here we go.");
 
                 var ftpConn = new FtpConnectModel();
 
