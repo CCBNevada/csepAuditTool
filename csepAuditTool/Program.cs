@@ -1,7 +1,6 @@
 ﻿using csepAuditTool.Model;
-using Microsoft.VisualBasic.FileIO;
-using System.Configuration;
-using System.Data;
+using SimpleLogger;
+
 
 namespace csepAuditTool
 {
@@ -11,40 +10,71 @@ namespace csepAuditTool
         {
             try
             {
-                Console.WriteLine("Hello, World!");
-                Console.WriteLine("Main Entry Here.");
+                var appStartDateTime = DateTime.Now;
+                SimpleLog.SetLogFile(logDir: ".\\Log", prefix: "csepAuditTool_Log_", writeText: false);
+                var thisAppStartMessage = String.Format("@@@@@@@@@@@@@@@@@@@@ APPLICATION ENTRY @@@@@@@@@@@@@@@@@@@@ {0}", appStartDateTime.ToString("MM/dd/yyyy h:mm:ss tt"));
+                Console.WriteLine(thisAppStartMessage);
+                SimpleLog.Info(thisAppStartMessage);
+
+                if (!ProtectConfigurationSectionModel.ProtectConfigurationSection())
+                    throw new Exception("UNABLE TO ENCRYPT APP.CONFIG FILE, DEBUG SOURCE. (ProtectConfigurationSectionModel.ProtectConfigurationSection())");
 
                 var ftpConn = new FtpConnectModel();
 
-                if (!ftpConn.CheckValues()) throw new Exception("At least one required config value is missing. Update App.config to continue.");
+                if (!ftpConn.CheckValues())
+                    throw new Exception("AT LEAST ONE REQUIRED CONFIG VALUE IS MISSING. UPDATE APP.CONFIG TO CONTINUE. (FtpConnectModel.CheckValues())");
 
-                if (!ftpConn.LocalDirectoryExistsCheck()) throw new Exception("Unable to read from or create local directory. Update App.config to continue.");
+                if (!ftpConn.LocalDirectoryExistsCheck())
+                    throw new Exception("UNABLE TO READ FROM OR CREATE LOCAL DIRECTORY. UPDATE APP.CONFIG TO CONTINUE. (FtpConnectModel.LocalDirectoryExistsCheck())");
 
                 ftpConn.BuildSftpClientConnection();
 
-                if (!ftpConn.CheckConnection()) throw new Exception("Unable to connect to SFTP with existing Configuration. Update App.config to continue.");
+                if (!ftpConn.CheckConnection())
+                    throw new Exception("UNABLE TO CONNECT TO SFTP WITH EXISTING CONFIGURATION. UPDATE APP.CONFIG TO CONTINUE. (FtpConnectModel.CheckConnection())");
 
-                if (!ftpConn.RemoteDirectoryExists()) throw new Exception("Remote directory does not exist. Update App.config to continue.");
+                if (!ftpConn.RemoteDirectoryExists())
+                    throw new Exception("REMOTE DIRECTORY DOES NOT EXIST. UPDATE APP.CONFIG TO CONTINUE. (FtpConnectModel.RemoteDirectoryExists())");
 
-                if (!ftpConn.RemoteFileExists()) throw new Exception("Remote file on server at provided path missing. Update App.config to continue.");
+                if (!ftpConn.RemoteFileExists())
+                    throw new Exception("REMOTE FILE ON SERVER AT PROVIDED PATH MISSING. UPDATE APP.CONFIG TO CONTINUE. (FtpConnectModel.RemoteFileExists())");
 
-                if (!ftpConn.DownloadFile()) throw new Exception("No file downloaded, unknown error occurred. Update App.config to continue.");
+                if (!ftpConn.DownloadFile())
+                    throw new Exception("NO FILE DOWNLOADED, UNKNOWN ERROR OCCURRED. UPDATE APP.CONFIG TO CONTINUE. (FtpConnectModel.DownloadFile())");
 
                 var incomingValues = new IncomingRowsCollectionModel(ftpConn);
 
                 var outgoingResultMatches = new OutgoingRowsCollectionModel(incomingValues);
-
-                var uploadLocateRequest = new UploadLocateRequestModel(outgoingResultMatches, ftpConn);
-                if(uploadLocateRequest.FileUploaded)
+                if (outgoingResultMatches.OutgoingRowsCollection.Count == 0) SimpleLog.Info("No Matches Found, Remaining Processes Skipped. (OutgoingRowsCollectionModel())");
+                else
                 {
-                    var myTest = uploadLocateRequest.FileUploaded;
+                    var uploadLocateRequest = new UploadLocateRequestModel(outgoingResultMatches, ftpConn);
+
+                    if (uploadLocateRequest.NoStringListMatchesCreated) throw new Exception("UNKNOWN ERROR OCCURRED CREATING STRING LIST FROM EXISTING OBJECT. (UploadLocateRequestModel())");
+                    if (!uploadLocateRequest.FileUploaded)
+                        throw new Exception("LOCATOR RESPONSE FILE NOT UPLOADED, UNKNOWN ERROR. CHECK AND UPDATE APP.CONFIG TO CONTINUE. (UploadLocateRequestModel.BuildUploadContents())");
                 }
 
-                Console.WriteLine("Main Exit.");
+                var appEndDateTime = DateTime.Now;
 
-                Environment.Exit(0);
-                
-            } catch(Exception ex) {
+                var thisAppSuccessMessage = "-----@@@@@@@@@@@@@@@@@@@@ ALL PROCESSES COMPLETED SUCCESSFULLY @@@@@@@@@@@@@@@@@@@@-----";
+                Console.WriteLine(thisAppSuccessMessage);
+                SimpleLog.Info(thisAppSuccessMessage);
+
+                var appTime = appEndDateTime - appStartDateTime;
+                var thisAppTimeMessage = String.Format("@@@@@@@@@@@@@@@@@@@@ Application Total Run Time: {0} @@@@@@@@@@@@@@@@@@@@", appTime);
+                Console.WriteLine(thisAppTimeMessage);
+                SimpleLog.Info(thisAppTimeMessage);
+
+                var thisAppEndMessage = String.Format("@@@@@@@@@@@@@@@@@@@@ APPLICATION EXIT @@@@@@@@@@@@@@@@@@@@ {0}", appEndDateTime.ToString("MM/dd/yyyy h:mm:ss tt"));
+                Console.WriteLine(thisAppEndMessage);
+                SimpleLog.Info(thisAppEndMessage);
+
+
+            }
+            catch (Exception ex)
+            {
+                SimpleLog.Error("EXEPTION HANDLED AND THROWN.");
+                SimpleLog.Log(ex);
                 throw new Exception(ex.Message);
             }
         }

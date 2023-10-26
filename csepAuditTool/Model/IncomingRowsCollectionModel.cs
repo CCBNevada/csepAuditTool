@@ -1,9 +1,5 @@
 ﻿using Microsoft.VisualBasic.FileIO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SimpleLogger;
 
 namespace csepAuditTool.Model
 {
@@ -43,7 +39,7 @@ namespace csepAuditTool.Model
                     foreach (var field in currentRow)
                     {
                         var colItem = columnTemplate.FirstOrDefault(p => p.ColIdx == iCol);
-                        if(colItem == null) continue;
+                        if (colItem == null) continue;
                         thisColumns.Add(new ColumnsModel(iCol, colItem.ColLen, colItem.ColNam) { ColVal = field.ToString() });
                         iCol++;
                     }
@@ -51,6 +47,7 @@ namespace csepAuditTool.Model
                     IncomingRowsCollection.Add(rowModel);
                     iRow++;
                 }
+                if (iRow > 0) SimpleLog.Info(String.Format("Found {0} locator request records incoming to CCB. (Lookup Values). (IncomingRowsCollectionModel())", iRow));
             }
         }
     }

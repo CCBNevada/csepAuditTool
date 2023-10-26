@@ -1,10 +1,5 @@
 ﻿using csepAuditTool.DAL;
-using Microsoft.VisualBasic.FileIO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SimpleLogger;
 
 namespace csepAuditTool.Model
 {
@@ -35,9 +30,8 @@ namespace csepAuditTool.Model
                 {
                     OutgoingRowsCollection.Add(matchedResult[j]);
                 }
-
             }
-
+            SimpleLog.Info(String.Format("Found {0} locator response records outgoing from CCB (Possible Matches). (OutgoingRowsCollectionModel())", OutgoingRowsCollection.Count()));
             accelaDataModel.CloseOdbcConnection();
         }
 

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using Renci.SshNet;
+using SimpleLogger;
 using System.Configuration;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
-using Renci.SshNet;
-using Renci.SshNet.Sftp;
 
 namespace csepAuditTool.Model
 {
@@ -29,18 +23,7 @@ namespace csepAuditTool.Model
         public string Sftp_OutgoingFileRoot { get; set; }
         public string Sftp_OutgoingFilename { get { return Sftp_OutgoingFileRoot + DateTime.Now.ToString("yyyyMMdd"); } }
         public string Sftp_LocalUploadFullPath { get { return Sftp_LocalDirectory.TrimEnd('\\') + "\\" + Sftp_OutgoingFilename; } }
-        //public string Sftp_RemoteFilenameUploadToday { get { return Sftp_OutgoingFileRoot + DateTime.Now.ToString("yyyyMMdd"); } }
-        //public string Sftp_RemoteFileLocalFullPath { get { return Sftp_LocalFilenameRoot; } }
         public string Sftp_RemoteFileUploadFullPath { get { return Sftp_RemoteDirectory.TrimEnd('/') + '/' + Sftp_OutgoingFilename; } }
-        //      <add key = "sftp_host" value="ccbnvdev.sftp.wpengine.com"/>
-        //<add key = "sftp_user" value="ccbnvdev-sdotson"/>
-        //<add key = "sftp_pass" value="23fPB0HVOemhkXAvzB0"/>
-        //<add key = "sftp_port" value="2222"/>
-        //<add key = "sftp_remoteDirectory" value="nvkids/dotx/locate"/>
-        //<add key = "sftp_localDirectory" value="C:\CSEP_Working_Temp"/> <!-- do not forget the closing slash -->
-        //<add key = "sftp_localFilenameRoot" value="csepFileReq_"/>
-        //<add key = "sftp_incomingFileRoot" value="req"/>
-        //<add key = "sftp_outgoingFileRoot" value="rsp"/>
         private SftpClient? _localClient { get; set; }
 
         public FtpConnectModel()
@@ -56,6 +39,7 @@ namespace csepAuditTool.Model
                 Sftp_LocalDirectory = ConfigurationManager.AppSettings["sftp_localDirectory"] ?? string.Empty;
                 Sftp_LocalFilenameRoot = ConfigurationManager.AppSettings["sftp_localFilenameRoot"] ?? string.Empty;
                 Sftp_OutgoingFileRoot = ConfigurationManager.AppSettings["sftp_outgoingFileRoot"] ?? string.Empty;
+                SimpleLog.Info("FtpConnect has required parameter values from app.config. (new FtpConnectModel())");
             }
             catch (Exception ex)
             {
@@ -78,27 +62,41 @@ namespace csepAuditTool.Model
                 return false;
             }
             if (!int.TryParse(Sftp_Port, out int testInt)) return false;
+            SimpleLog.Info("FtpConnect required properties have parseable values. (FtpConnectModel.CheckValues())");
             return true;
         }
 
         public bool LocalDirectoryExistsCheck()
         {
-            var directoryExists = System.IO.Directory.Exists(Sftp_LocalDirectory);
-            if (!directoryExists) System.IO.Directory.CreateDirectory(Sftp_LocalDirectory);
-            return System.IO.Directory.Exists(Sftp_LocalDirectory);
+            var directoryExists = Directory.Exists(Sftp_LocalDirectory);
+            if (!directoryExists) Directory.CreateDirectory(Sftp_LocalDirectory);
+            var localDirExists = Directory.Exists(Sftp_LocalDirectory);
+            if (!localDirExists) return false;
+            SimpleLog.Info("Local Directory found to exist after creation or locate. (FtpConnectModel.LocalDirectoryExistsCheck())");
+            return true;
         }
 
         public void BuildSftpClientConnection()
         {
             _localClient = new SftpClient(Sftp_Host, Sftp_PortInt, Sftp_User, Sftp_Pass);
+            SimpleLog.Info("SftpClient connection built. (FtpConnectModel.BuildSftpClientConnection())");
         }
 
         public bool CheckConnection()
         {
+            var updatedOrOpened = false;
             try
             {
-                if (_localClient == null) BuildSftpClientConnection();
-                if(_localClient != null && !_localClient.IsConnected) _localClient.Connect();
+                if (_localClient == null)
+                {
+                    updatedOrOpened = true;
+                    BuildSftpClientConnection();
+                }
+                if (_localClient != null && !_localClient.IsConnected)
+                {
+                    updatedOrOpened = true;
+                    _localClient.Connect();
+                }
             }
             catch (Exception ex)
             {
@@ -106,31 +104,43 @@ namespace csepAuditTool.Model
                 return false;
             }
             if (_localClient == null) return false;
-            return _localClient.IsConnected;
+            var clientConnected = _localClient.IsConnected;
+            if (!clientConnected) return false;
+            if (updatedOrOpened) SimpleLog.Info("Sftp created and opened, SftpClient.IsConnected=true. (FtpConnectModel.CheckConnection())");
+            return true;
         }
 
         public bool RemoteDirectoryExists()
         {
             if (!CheckConnection()) return false;
-            return _localClient != null && _localClient.Exists(Sftp_RemoteDirectory);
+            var remoteDirectoryExists = _localClient != null && _localClient.Exists(Sftp_RemoteDirectory);
+            if (!remoteDirectoryExists) return false;
+            SimpleLog.Info("Remote Directory found to exist. (FtpConnectModel.RemoteDirectoryExists())");
+            return true;
         }
 
         public bool RemoteFileExists()
         {
             if (!CheckConnection()) return false;
-            return _localClient != null && _localClient.Exists(Sftp_RemoteFullPath);
+            var remoteFileExists = _localClient != null && _localClient.Exists(Sftp_RemoteFullPath);
+            if (!remoteFileExists) return false;
+            SimpleLog.Info("Remote File found to exist. (FtpConnectModel.RemoteFileExists())");
+            return true;
         }
 
         public bool DownloadFile()
         {
             if (!CheckConnection()) return false;
-            if(_localClient == null) return false;
+            if (_localClient == null) return false;
             using (Stream myStream = File.OpenWrite(Sftp_LocalFullPath))
             {
                 _localClient.DownloadFile(Sftp_RemoteFullPath, myStream);
             }
             _localClient.Disconnect();
-            return File.Exists(Sftp_LocalFullPath);
+            var downloadedFileExists = File.Exists(Sftp_LocalFullPath);
+            if (!downloadedFileExists) return false;
+            SimpleLog.Info("File Downloaded successfully and exists locally. (FtpConnectModel.DownloadFile())");
+            return true;
         }
 
         public string BuildOutgoingContentString(List<string> OutgoingResults)
@@ -140,11 +150,12 @@ namespace csepAuditTool.Model
             {
                 thisFileContent += OutgoingResults[i].ToString() + "\r\n";
             }
+            SimpleLog.Info("Ougoing Result String built. (FtpConnectModel.BuildOutgoingContentString()");
             return thisFileContent;
         }
 
         public bool SaveUploadFile(List<string> outgoingMatches)
-        { 
+        {
             if (File.Exists(Sftp_LocalUploadFullPath)) File.Delete(Sftp_LocalUploadFullPath);
             var outgoingFileContent = BuildOutgoingContentString(outgoingMatches);
             using (var localFileStream = new FileStream(Sftp_LocalUploadFullPath, FileMode.CreateNew))
@@ -154,13 +165,16 @@ namespace csepAuditTool.Model
                     localWriter.Write(Encoding.UTF8.GetBytes(outgoingFileContent));
                 }
             }
-            return File.Exists(Sftp_LocalUploadFullPath);
+            var uploadedFile = File.Exists(Sftp_LocalUploadFullPath);
+            if (!uploadedFile) return false;
+            SimpleLog.Info("Upload file created and saved to local disk. (FtpConnectModel.SaveUploadFile())");
+            return true;
         }
 
         public bool UploadFile()
         {
             if (!CheckConnection()) return false;
-            if(_localClient == null) return false;
+            if (_localClient == null) return false;
             using (FileStream fs = new FileStream(Sftp_LocalUploadFullPath, FileMode.Open))
             {
                 _localClient.BufferSize = 1024;
@@ -168,7 +182,9 @@ namespace csepAuditTool.Model
             }
             var remoteFileExists = _localClient.Exists(Sftp_RemoteFileUploadFullPath);
             _localClient.Disconnect();
-            return remoteFileExists;
+            if (!remoteFileExists) return false;
+            SimpleLog.Info("Upload file uploaded to Sftp server. (FtpConnectModel.UploadFile())");
+            return true;
         }
     }
 }

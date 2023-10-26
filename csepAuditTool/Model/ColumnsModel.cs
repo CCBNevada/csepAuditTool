@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace csepAuditTool.Model
+﻿namespace csepAuditTool.Model
 {
     internal class ColumnsModel
     {
         public int ColIdx { get; set; }
         public int ColLen { get; set; }
-        public string ColNam {  get; set; }
+        public string ColNam { get; set; }
         public string ColVal { get; set; }
 
-        public ColumnsModel(int colIdx, int colLen, string colNam) {
+        public ColumnsModel(int colIdx, int colLen, string colNam)
+        {
             ColIdx = colIdx;
             ColLen = colLen;
             ColNam = colNam;

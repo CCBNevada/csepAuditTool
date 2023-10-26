@@ -1,12 +1,6 @@
 ﻿using csepAuditTool.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.Odbc;
 using System.Configuration;
-using System.Runtime.InteropServices.ObjectiveC;
+using System.Data.Odbc;
 
 namespace csepAuditTool.DAL
 {
@@ -100,10 +94,10 @@ namespace csepAuditTool.DAL
             var dr3 = search3CommandNoMiddleName.ExecuteReader();
             if (dr3 != null && dr3.HasRows)
             {
-                while(dr3.Read())
+                while (dr3.Read())
                 {
                     var outgoingRow = new OutgoingRowModel();
-                    for(var i = 0; i < dr3.FieldCount; i++)
+                    for (var i = 0; i < dr3.FieldCount; i++)
                     {
                         var thisColumn = outgoingLocateRequest.SingleRowModel().FirstOrDefault(p => p.ColNam == dr3.GetName(i));
                         if (thisColumn == null) continue;
