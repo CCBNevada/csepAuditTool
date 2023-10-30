@@ -24,7 +24,7 @@ namespace csepAuditTool.Model
                 var incomingRowValues = incomingRows.IncomingRowsCollection[i];
 
                 var matchedResult = accelaDataModel.GetMatches(incomingRowValues, resultsModel);
-                if (matchedResult == null) continue;
+                if (matchedResult == null || matchedResult.Count == 0) continue;
 
                 for (var j = 0; j < matchedResult.Count(); j++)
                 {

@@ -11,7 +11,7 @@ namespace csepAuditTool
             try
             {
                 var appStartDateTime = DateTime.Now;
-                SimpleLog.SetLogFile(logDir: ".\\Log", prefix: "csepAuditTool_Log_", writeText: false);
+                SimpleLog.SetLogFile(logDir: "..\\Logs", prefix: "csepAuditTool_Log_", writeText: false);
                 var thisAppStartMessage = String.Format("@@@@@@@@@@@@@@@@@@@@ APPLICATION ENTRY @@@@@@@@@@@@@@@@@@@@ {0}", appStartDateTime.ToString("MM/dd/yyyy h:mm:ss tt"));
                 Console.WriteLine(thisAppStartMessage);
                 SimpleLog.Info(thisAppStartMessage);
