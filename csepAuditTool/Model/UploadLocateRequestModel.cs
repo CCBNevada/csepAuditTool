@@ -44,78 +44,18 @@ namespace csepAuditTool.Model
                     var colLen = thisColumn.ColLen;
                     var colNam = thisColumn.ColNam;
                     var colVal = thisColumn.ColVal.Trim();
-                    if ((colNam.Contains("Date") || colNam.Contains("date")) && DateTime.TryParse(colVal, out DateTime dt))
+                    if (colNam.ToUpper().Contains("DATE") && DateTime.TryParse(colVal, out DateTime dt))
                     {
-                        colVal = outgoingRows.DateToStringMMddyyyy(dt);
+                        colVal = OutgoingRowsCollectionModel.DateToStringMMddyyyy(dt);
                     }
-                    if (colNam.Contains("Agent_Height"))
+                    if (colNam == "Agent_Height")
                     {
-                        //remove all white spaces
-                        colVal = new string(colVal.Where(p => !char.IsWhiteSpace(p)).ToArray());
-
-                        var feetInches = 0;
-                        var inchInches = 0;
-
-                        //convert string to inches
-                        if (colVal.Contains('\'') || colVal.Contains('’') || colVal.Contains('f'))
-                        {
-                            //open foot - parse out feet, multiply by 12 (foot to inches)
-                            var feetString = "";
-                            if (colVal.Contains('\''))
-                            {
-                                feetString = colVal.Substring(0, colVal.IndexOf('\''));
-                                colVal = colVal.Substring(colVal.IndexOf('\'') + 1);
-                            }
-                            if (colVal.Contains('’'))
-                            {
-                                feetString = colVal.Substring(0, colVal.IndexOf('’'));
-                                colVal = colVal.Substring(colVal.IndexOf('’') + 1);
-                            }
-                            if (colVal.Contains('f'))
-                            {
-                                feetString = colVal.Substring(0, colVal.IndexOf('f'));
-                                colVal = colVal.Substring(colVal.IndexOf('f') + 1);
-                            }
-                            feetString.Trim();
-                            if (int.TryParse(feetString, out int testFeetInt))
-                            {
-                                feetInches = testFeetInt * 12;
-                            }
-                            colVal.Trim();
-                            //close foot
-                        }
-
-                        var inchString = "";
-                        if (colVal.Contains('"') || colVal.Contains('i'))
-                        {
-                            //open inch - parse out inches if included with text
-                            if (colVal.Contains('"'))
-                            {
-                                inchString = colVal.Substring(0, colVal.IndexOf('"'));
-                                colVal = colVal.Substring(colVal.IndexOf('"') + 1);
-                            }
-                            if (colVal.Contains('i'))
-                            {
-                                inchString = colVal.Substring(0, colVal.IndexOf('i'));
-                                colVal = colVal.Substring(colVal.IndexOf('i') + 1);
-                            }
-                            inchString.Trim();
-                            //close inch
-                        }
-                        else
-                        {
-                            inchString = colVal;
-                        }
-                        if (int.TryParse(inchString, out int testInchInt))
-                        {
-                            inchInches = testInchInt;
-                        }
-                        //var test = thisColumn.ColVal.Trim();
-                        var totalInches = feetInches + inchInches;
-                        if (totalInches > 0)
-                        {
-                            colVal = totalInches.ToString();
-                        }
+                        //var nam = OutgoingRows.OutgoingRowsCollection[i].RowCols.FirstOrDefault(p => p.ColNam.Contains("Agent_First_Name"));
+                        //if (nam != null && nam.ColVal == "Daisy")
+                        //{
+                        //    var t = "";
+                        //}
+                        colVal = OutgoingRowsCollectionModel.BuildAgentHeightString(colVal);
                     }
                     if (colVal.Length > 0 && colVal.Length > colLen)
                     {

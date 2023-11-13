@@ -61,7 +61,7 @@ namespace csepAuditTool.Model
             {
                 return false;
             }
-            if (!int.TryParse(Sftp_Port, out int testInt)) return false;
+            if (!int.TryParse(Sftp_Port, out int sftpInt)) return false;
             SimpleLog.Info("FtpConnect required properties have parseable values. (FtpConnectModel.CheckValues())");
             return true;
         }
@@ -150,7 +150,7 @@ namespace csepAuditTool.Model
             {
                 thisFileContent += OutgoingResults[i].ToString() + "\r\n";
             }
-            SimpleLog.Info("Ougoing Result String built. (FtpConnectModel.BuildOutgoingContentString()");
+            SimpleLog.Info("Outgoing Result String built. (FtpConnectModel.BuildOutgoingContentString()");
             return thisFileContent;
         }
 

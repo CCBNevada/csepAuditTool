@@ -16,6 +16,7 @@ namespace csepAuditTool.Model
             var columnFieldsLengths = resultsModel.SingleRowFieldLengths();
             var columnFieldsCount = resultsModel.SingleRowFieldCount();
 
+            var readedLines = new List<string>();
             using (var reader = new TextFieldParser(ftpConnection.Sftp_LocalFullPath))
             {
                 reader.TextFieldType = FieldType.FixedWidth;
@@ -34,13 +35,17 @@ namespace csepAuditTool.Model
 
                     if (currentRow == null) continue;
 
-                    var iCol = 0;
+                    //for some reason was reading last line twice - and not always, this handles that
+                    var currentRowString = String.Join("", currentRow);
+                    if (readedLines.Contains(currentRowString)) continue;
+                    readedLines.Add(currentRowString);
 
+                    var iCol = 0;
                     foreach (var field in currentRow)
                     {
                         var colItem = columnTemplate.FirstOrDefault(p => p.ColIdx == iCol);
                         if (colItem == null) continue;
-                        thisColumns.Add(new ColumnsModel(iCol, colItem.ColLen, colItem.ColNam) { ColVal = field.ToString() });
+                        thisColumns.Add(new ColumnsModel(iCol, colItem.ColLen, colItem.ColNam, field.ToString()));
                         iCol++;
                     }
                     rowModel.RowCols = thisColumns;
