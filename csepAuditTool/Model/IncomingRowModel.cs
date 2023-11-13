@@ -5,24 +5,24 @@
         public int RowIdx { get; set; }
         public List<ColumnsModel> RowCols { get; set; }
 
-        public string? LastName
+        public string LastName
         {
             get
             {
-                if (RowCols == null) return null;
+                if (RowCols == null) return string.Empty;
                 var myLastName = RowCols.FirstOrDefault(p => p.ColNam == "Participant_Last_Name");
-                if (myLastName == null) return null;
+                if (myLastName == null) return string.Empty;
                 return myLastName.ColVal;
             }
         }
 
-        public string? FirstName
+        public string FirstName
         {
             get
             {
-                if (RowCols == null) return null;
+                if (RowCols == null) return string.Empty;
                 var myFirstName = RowCols.FirstOrDefault(p => p.ColNam == "Participant_First_Name");
-                if (myFirstName == null) return null;
+                if (myFirstName == null) return string.Empty;
                 return myFirstName.ColVal;
             }
         }
@@ -31,20 +31,20 @@
         {
             get
             {
-                if (RowCols == null) return "";
+                if (RowCols == null) return string.Empty;
                 var myMiddleName = RowCols.FirstOrDefault(p => p.ColNam == "Participant_Middle_Name");
-                if (myMiddleName == null || myMiddleName.ColVal == null) return "";
-                return myMiddleName.ColVal.Length > 0 ? myMiddleName.ColVal : "";
+                if (myMiddleName == null || myMiddleName.ColVal == null) return string.Empty;
+                return myMiddleName.ColVal.Length > 0 ? myMiddleName.ColVal : string.Empty;
             }
         }
 
-        public string? FirstNameFirst4
+        public string FirstNameFirst4
         {
             get
             {
-                if (RowCols == null) return null;
-                var myFirstNameFirst4 = FirstName;
-                if (myFirstNameFirst4 == null) return null;
+                if (RowCols == null) return string.Empty;
+                var myFirstNameFirst4 = FirstName ?? string.Empty;
+                if (myFirstNameFirst4 == null) return string.Empty;
                 if (myFirstNameFirst4.Length > 4) return myFirstNameFirst4.Substring(0, 4);
                 return myFirstNameFirst4;
             }
@@ -85,48 +85,57 @@
         //        var myFirstLastName = myFirstName + ' ' + myLastName;
         //    }
         //}
-        public string? NameModifier
+        public string NameModifier
         {
             get
             {
-                if (RowCols == null) return null;
+                if (RowCols == null) return string.Empty;
                 var myNameModifier = RowCols.FirstOrDefault(p => p.ColNam == "Participant_Name_Modifier");
-                if (myNameModifier == null) return null;
+                if (myNameModifier == null) return string.Empty;
                 return myNameModifier.ColVal;
             }
         }
-        public string? Ssn
+        public string Ssn
         {
             get
             {
-                if (RowCols == null) return null;
+                if (RowCols == null) return string.Empty;
                 var mySsn = RowCols.FirstOrDefault(p => p.ColNam == "Participant_Social_Security_Number");
-                if (mySsn == null) return null;
+                if (mySsn == null) return string.Empty;
                 return mySsn.ColVal;
             }
         }
-        public string? SsnWithDashes
+        public string SsnWithDashes
         {
             get
             {
-                if (RowCols == null) return null;
+                if (RowCols == null) return string.Empty;
                 var mySocialSecurityNumberObject = RowCols.FirstOrDefault(p => p.ColNam == "Participant_Social_Security_Number");
-                if (mySocialSecurityNumberObject == null) return null;
+                if (mySocialSecurityNumberObject == null) return string.Empty;
                 var mySocialSecurityNumber = mySocialSecurityNumberObject.ColVal;
                 if (mySocialSecurityNumber != null && mySocialSecurityNumber.Length == 9)
                 {
                     return mySocialSecurityNumber.Insert(3, "-").Insert(6, "-");
                 }
-                return null;
+                return string.Empty;
             }
         }
-        public string? BirthDateString
+        public string SsnLast4
         {
             get
             {
-                if (RowCols == null) return null;
+                if (RowCols == null || Ssn == string.Empty) return string.Empty;
+                if (Ssn.Length > 4 && Ssn.Length < 10) return Ssn.Substring(Ssn.Length - 4);
+                return string.Empty;
+            }
+        }
+        public string BirthDateString
+        {
+            get
+            {
+                if (RowCols == null) return string.Empty;
                 var myBDString = RowCols.FirstOrDefault(p => p.ColNam == "Participant_Date_Of_Birth");
-                if (myBDString == null) return null;
+                if (myBDString == null) return string.Empty;
                 return myBDString.ColVal;
             }
         }

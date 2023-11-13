@@ -27,7 +27,7 @@ namespace csepAuditTool.Model
                 //{
                 //    var t = "";
                 //}
-                var matchedResult = accelaDataModel.GetMatches(incomingRowValues, resultsModel);
+                var matchedResult = accelaDataModel.GetMatches(incomingRowValues, resultsModel, i);
                 if (matchedResult == null || matchedResult.Count == 0) continue;
 
                 for (var j = 0; j < matchedResult.Count(); j++)
