@@ -54,13 +54,15 @@ namespace csepAuditTool.DAL
                 search1Command.Dispose();
                 if (matchedResults.Count > 0)
                 {
-                    SimpleLog.Info(String.Format("{0} Matches Found Query1. criteria:{1}. (File Line:{2})", matchedResults.Count, DataQueryModel.Query1Fields, lineNumber));
+                    SimpleLog.Info(String.Format("File Line:{0}. {1} Matches Found for Query1. Criteria:{2}.)",
+                        lineNumber, matchedResults.Count, DataQueryModel.Query1Fields));
                     return matchedResults;
                 }
             }
             catch (Exception ex)
             {
-                var errTxt = String.Format("File Line:{0} Error in Query 1. Processes Stopped. Values [SsnWithDashes:{1},FirstNameFirst4:{2}]", lineNumber, incomingRowValues.SsnWithDashes, incomingRowValues.FirstNameFirst4);
+                var errTxt = String.Format("File Line:{0}. Error in Query 1. Processes Stopped. Check Values. Criteria Fields:{1}.",
+                    lineNumber, DataQueryModel.Query1Fields);
                 SimpleLog.Error(errTxt);
                 SimpleLog.Error(ex.Message);
                 throw new Exception(ex.Message);
@@ -98,14 +100,16 @@ namespace csepAuditTool.DAL
                     search2Command.Dispose();
                     if (matchedResults.Count > 0)
                     {
-                        SimpleLog.Info(String.Format("{0} Matches Found Query2. criteria:{1}. (File Line:{2})", matchedResults.Count, DataQueryModel.Query2Fields, lineNumber));
+                        SimpleLog.Info(String.Format("File Line:{0}. {1} Matches Found for Query2. Criteria:{2}.)",
+                            lineNumber, matchedResults.Count, DataQueryModel.Query2Fields));
                         return matchedResults;
                     }
                 }
             }
             catch (Exception ex)
             {
-                var errTxt = String.Format("File Line:{0} Error in Query 2. Processes Stopped: Values [LastName:{1},MiddleName:{2},FirstName:{3},BirthDate:{4}]", lineNumber, incomingRowValues.LastName, incomingRowValues.MiddleName, incomingRowValues.FirstName, incomingRowValues.BirthDate);
+                var errTxt = String.Format("File Line:{0}. Error in Query 2. Processes Stopped. Check Values. Fields:{1}.",
+                    lineNumber, DataQueryModel.Query2Fields);
                 SimpleLog.Error(errTxt);
                 SimpleLog.Error(ex.Message);
                 throw new Exception(ex.Message);
@@ -139,20 +143,24 @@ namespace csepAuditTool.DAL
                         }
                     }
                     search3CommandNoMiddleName.Dispose();
+                    if (matchedResults.Count > 0)
+                    {
+                        SimpleLog.Info(String.Format("File Line:{0}. {1} Matches Found for Query3. Criteria:{2}.)",
+                            lineNumber, matchedResults.Count, DataQueryModel.Query3Fields));
+                        return matchedResults;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                var errTxt = String.Format("File Line:{0} Error in Query 3. Processes Stopped: Values [LastName:{1},FirstName:{2},BirthDate:{3}]", lineNumber, incomingRowValues.LastName, incomingRowValues.FirstName, incomingRowValues.BirthDate);
+                var errTxt = String.Format("File Line:{0}. Error in Query 3. Processes Stopped. Check Values. Criteria:{1}.",
+                    lineNumber, DataQueryModel.Query3Fields);
                 SimpleLog.Error(errTxt);
                 SimpleLog.Error(ex.Message);
                 throw new Exception(ex.Message);
             }
-
-            if (matchedResults.Count > 0) SimpleLog.Info(String.Format("{0} Matches Found Query3. criteria:{1}. (File Line:{2})\"", matchedResults.Count, DataQueryModel.Query3Fields, lineNumber));
-
-            SimpleLog.Info(String.Format("File Line:{0} NO MATCHES FOUND FOR: [SsnLast4:{1},FirstNameFirst4:{2},LastName:{3},MiddleName:{4},FirstName:{5},BirthDate:{6}]",
-                lineNumber, incomingRowValues.SsnLast4, incomingRowValues.FirstNameFirst4, incomingRowValues.LastName, incomingRowValues.MiddleName, incomingRowValues.FirstName, incomingRowValues.BirthDateString));
+            SimpleLog.Info(String.Format("File Line:{0} NO MATCHES FOUND. CRITERIA:{1},{2},{3}",
+                lineNumber, DataQueryModel.Query1Fields, DataQueryModel.Query2Fields, DataQueryModel.Query3Fields));
             return matchedResults;
         }
 
